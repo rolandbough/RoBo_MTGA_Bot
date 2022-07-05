@@ -20,6 +20,8 @@ import win32con
 from random import randrange
 from datetime import datetime
 import logging
+import cv2 as cv
+import numpy as np
 
 # ----- SETTINGS -----
 # These settings can be used to fine tune how the bot acts. It may be the case that the bot is clicking too fast or slow
@@ -80,35 +82,37 @@ class Cord:
     # Maintain co-ordinates of locations to mouse click
 
     # The play button on the dashboard, bottom right
-    play_button = (1662, 1009)
+    play_button = (1108, 673)
     # Clicking (almost) anywhere in the screen to advance (usually after a match)
-    click_to_continue = (250, 200)
+    click_to_continue = (167, 133)
 
     # Card positions to play. Remove [::2] for all positions (less likely to need a 2nd cycle, but slower)
-    cards_in_hand = ((1000, 1079), (890, 1079), (1050, 1079), (840, 1079), (1160, 1079), (720, 1079), (1225, 1079), (660, 1079),
-                     (1325, 1079), (540, 1079), (1425, 1079), (490, 1079), (1550, 1079), (360, 1079))
+    cards_in_hand = ((667, 719), (593, 719), (700, 719), (560, 719), (773, 719), (480, 719), (817, 719),
+                     (440, 719), (883, 719), (360, 719), (950, 719), (327, 719), (1033, 719), (240, 719))
 
-    undo_button = (1870, 840)           # Undo button when casting a spell
+    #1080P = ((1000, 1079), (890, 1079), (1050, 1079), (840, 1079), (1160, 1079), (720, 1079), (1225, 1079), (660, 1079), (1325, 1079), (540, 1079), (1425, 1079), (490, 1079), (1550, 1079), (360, 1079))
+
+    undo_button = (1247, 560)           # Undo button when casting a spell
     # During combat phase, the No Attacks button
-    no_attacks_button = (1770, 880)
+    no_attacks_button = (1180, 587)
     # Click done to auto-assign damage to multiple blockers
-    order_blockers_done = (970, 840)
+    order_blockers_done = (647, 560)
     # Resolve button, also No Blocks during opponent combat
-    resolve_button = (1770, 950)
-    keep_draw = (1140, 870)             # Accept drawn cards at start of match
+    resolve_button = (1180, 633)
+    keep_draw = (760, 580)             # Accept drawn cards at start of match
     # Pass turn button (during both player's turns)
-    pass_turn = (1850, 1030)
-    deck_select = (1750, 800)           # Click to select which deck to use
-    white_deck = (450, 500)
-    green_deck = (760, 500)
-    black_deck = (1055, 500)
-    blue_deck = (1350, 500)
+    pass_turn = (1233, 687)
+    deck_select = (1167, 533)           # Click to select which deck to use
+    white_deck = (300, 333)
+    green_deck = (507, 333)
+    black_deck = (703, 333)
+    blue_deck = (900, 333)
     # Above decks not actually required, this cord always selects the next in cycle
-    red_deck = (170, 685)
-    smiley_face_continue = (960, 850)   # Skip on smiley face screen
+    red_deck = (113, 457)
+    smiley_face_continue = (640, 567)   # Skip on smiley face screen
     # To select when attacking in case opponent has Planeswalker in play
-    opponent_avatar = (955, 105)
-    cancel_area = (1730, 1030)          # Just a blank area to click to cancel
+    opponent_avatar = (637, 70)
+    cancel_area = (1153, 687)          # Just a blank area to click to cancel
 
 
 class Zone:
@@ -116,30 +120,30 @@ class Zone:
     # Maintain co-ordinates of zones/boxes that will be analysed for grayscale value
 
     # On opening screen at game launch
-    but_play = (1705, 1000, 1708, 1005)
+    but_play = (1137, 667, 1139, 670)
     # After you press play to choose deck
-    but_play_sidebar = (1900, 670, 1905, 675)
+    but_play_sidebar = (1267, 447, 1270, 450)
     # In match, Match Victory, or Match Defeat
-    friends_icon = (30, 1005, 35, 1015)
+    friends_icon = (20, 670, 23, 677)
     # Match is over and awaiting click
-    match_result = (1835, 1020, 1868, 1038)
+    match_result = (1223, 680, 1245, 692)
     # Undo button, appears when not sufficient mana to cast card
-    undo_but = (1860, 830, 1870, 840)
+    undo_but = (1240, 553, 1247, 560)
     # Main phase icon, indicating your turn, or not first main
-    p1_main_phase = (830, 872, 840, 882)
-    p1_second_phase = (1080, 870, 1090, 880)    # Second phase icon
-    p2_main_phase = (850, 118, 860, 128)        # Opponent Main phase icon
-    p2_second_phase = (1058, 118, 1068, 128)    # Opponent Second phase icon
+    p1_main_phase = (553, 581, 560, 588)
+    p1_second_phase = (720, 580, 727, 587)    # Second phase icon
+    p2_main_phase = (567, 79, 573, 85)        # Opponent Main phase icon
+    p2_second_phase = (705, 79, 712, 85)    # Opponent Second phase icon
     # Confirms start of match Mulligan/Keep
-    mulligan_button = (764, 857, 766, 877)
+    mulligan_button = (509, 571, 511, 585)
     # Shield icon, black when having to choose No/All Attack
-    shield_icon = (1770, 824, 1780, 834)
+    shield_icon = (1180, 549, 1187, 556)
     # Screen when opponent chooses multiple blockers
-    block_order = (1316, 783, 1329, 785)
+    block_order = (877, 522, 886, 523)
     # Player name at bottom left of combat screen
-    harmonix_name = (98, 1030, 99, 1040)
+    harmonix_name = (65, 687, 66, 693)
     # Last 'h' on smiley face "Did you have fun" screen
-    smiley_face = (1236, 426, 1240, 455)
+    smiley_face = (824, 284, 827, 303)
 
 
 class Range:
@@ -147,7 +151,7 @@ class Range:
     # Range of values that a Zone should fall within to trigger a positive match
     # Any (0, 0) values need to be amended with the correct range
 
-    play_button = (0, 0)
+    play_button = (250, 270)
     play_button_sidebar = (38, 40)
     friends_icon_match_result = (0, 0)
     friends_icon_rewards = (0, 0)
@@ -172,7 +176,6 @@ def check_if_new_day(start_time):
     print(f"The difference is {split - start_time} seconds")
 
     if split - start_time > SECONDS_UNTIL_ROTATION:
-        print("It's been longer than a day")
         global start
         start = (datetime.today()).timestamp()
         return True
