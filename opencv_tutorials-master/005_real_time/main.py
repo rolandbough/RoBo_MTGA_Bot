@@ -11,9 +11,9 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 # initialize the WindowCapture class
-wincap = WindowCapture('Albion Online Client')
+wincap = WindowCapture()
 # initialize the Vision class
-vision_limestone = Vision('albion_limestone.jpg')
+vision_limestone = Vision('img\play_button.png')
 
 '''
 # https://www.crazygames.com/game/guns-and-bottle
@@ -29,7 +29,7 @@ while(True):
 
     # display the processed image
     points = vision_limestone.find(screenshot, 0.5, 'rectangles')
-    #points = vision_gunsnbottle.find(screenshot, 0.7, 'points')
+    # points = vision_gunsnbottle.find(screenshot, 0.7, 'points')
 
     # debug the loop rate
     print('FPS {}'.format(1 / (time() - loop_time)))

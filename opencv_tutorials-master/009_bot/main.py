@@ -5,10 +5,10 @@ from time import time
 from windowcapture import WindowCapture
 from detection import Detection
 from vision import Vision
-from bot import AlbionBot, BotState
+from bot import MTGABot, BotState
 
 # Change the working directory to the folder this script is in.
-# Doing this because I'll be putting the files from each video in their 
+# Doing this because I'll be putting the files from each video in their
 # own folder on GitHub
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -16,13 +16,13 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = True
 
 # initialize the WindowCapture class
-wincap = WindowCapture('Albion Online Client')
+wincap = WindowCapture('MTGA')
 # load the detector
-detector = Detection('limestone_model_final.xml')
+detector = Detection()  # 'limestone_model_final.xml')
 # load an empty Vision class
 vision = Vision()
 # initialize the bot
-bot = AlbionBot((wincap.offset_x, wincap.offset_y), (wincap.w, wincap.h))
+bot = MTGABot((wincap.offset_x, wincap.offset_y), (wincap.w, wincap.h))
 
 wincap.start()
 detector.start()
@@ -59,7 +59,8 @@ while(True):
 
     if DEBUG:
         # draw the detection results onto the original image
-        detection_image = vision.draw_rectangles(wincap.screenshot, detector.rectangles)
+        detection_image = vision.draw_rectangles(
+            wincap.screenshot, detector.rectangles)
         # display the images
         cv.imshow('Matches', detection_image)
 

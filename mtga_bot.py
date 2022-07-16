@@ -17,11 +17,13 @@ from numpy import *
 import time
 import win32api
 import win32con
+import win32gui
 from random import randrange
 from datetime import datetime
 import logging
 import cv2 as cv
 import numpy as np
+import re
 
 # ----- SETTINGS -----
 # These settings can be used to fine tune how the bot acts. It may be the case that the bot is clicking too fast or slow
@@ -51,7 +53,6 @@ STATIC_CLICK_DRAW_ACCEPT = True
 SLOW_DRAW_BUT_PLAY_MULLIGAN_PRESS_DELAY = 10
 
 CLICKS_DISABLED = False             # Mouse clicks will not register, for testing
-MOUSE_MOVE_DISABLE = False          # Mouse movement will not register, for testing
 
 LOG_LEVEL = logging.INFO
 
@@ -75,6 +76,32 @@ logger.addHandler(hdlr)
 logger.setLevel(LOG_LEVEL)
 
 # -------------------
+
+
+class WindowMgr:
+    """Encapsulates some calls to the winapi for window management"""
+
+    def __init__(self):
+        """Constructor"""
+        self._handle = None
+
+    def find_window(self, class_name, window_name=None):
+        """find a window by its class_name"""
+        self._handle = win32gui.FindWindow(class_name, window_name)
+
+    def _window_enum_callback(self, hwnd, wildcard):
+        """Pass to win32gui.EnumWindows() to check all the opened windows"""
+        if re.match(wildcard, str(win32gui.GetWindowText(hwnd))) is not None:
+            self._handle = hwnd
+
+    def find_window_wildcard(self, wildcard):
+        """find a window whose title matches the wildcard regex"""
+        self._handle = None
+        win32gui.EnumWindows(self._window_enum_callback, wildcard)
+
+    def set_foreground(self):
+        """put the window in the foreground"""
+        win32gui.SetForegroundWindow(self._handle)
 
 
 class Cord:
@@ -231,6 +258,9 @@ def get_greyscale_value(box):
 
 
 def scan_screen():
+    w = WindowMgr()
+    w.find_window_wildcard("MTGA")
+    w.set_foreground()
 
     but_play_value = get_greyscale_value(Zone.but_play)
     print("but_play_value: {}".format(but_play_value))

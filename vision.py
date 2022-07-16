@@ -14,7 +14,7 @@ class Vision:
     def __init__(self, needle_img_path, method=cv.TM_CCOEFF_NORMED):
         # load the image we're trying to match
         # https://docs.opencv.org/4.2.0/d4/da8/group__imgcodecs.html
-        self.needle_img = cv.imread(needle_img_path, cv.IMREAD_UNCHANGED)
+        self.needle_img = cv.imread(needle_img_path, cv.IMREAD_COLOR)
 
         # Save the dimensions of the needle image
         self.needle_w = self.needle_img.shape[1]
@@ -47,7 +47,8 @@ class Vision:
         # done. If you put it at 2 then an object needs at least 3 overlapping rectangles to appear
         # in the result. I've set eps to 0.5, which is:
         # "Relative difference between sides of the rectangles to merge them into a group."
-        rectangles, weights = cv.groupRectangles(rectangles, groupThreshold=1, eps=0.5)
+        rectangles, weights = cv.groupRectangles(
+            rectangles, groupThreshold=1, eps=0.5)
         #print(rectangles)
 
         points = []
@@ -73,13 +74,13 @@ class Vision:
                     top_left = (x, y)
                     bottom_right = (x + w, y + h)
                     # Draw the box
-                    cv.rectangle(haystack_img, top_left, bottom_right, color=line_color, 
-                                lineType=line_type, thickness=2)
+                    cv.rectangle(haystack_img, top_left, bottom_right, color=line_color,
+                                 lineType=line_type, thickness=2)
                 elif debug_mode == 'points':
                     # Draw the center point
-                    cv.drawMarker(haystack_img, (center_x, center_y), 
-                                color=marker_color, markerType=marker_type, 
-                                markerSize=40, thickness=2)
+                    cv.drawMarker(haystack_img, (center_x, center_y),
+                                  color=marker_color, markerType=marker_type,
+                                  markerSize=40, thickness=2)
 
         if debug_mode:
             cv.imshow('Matches', haystack_img)

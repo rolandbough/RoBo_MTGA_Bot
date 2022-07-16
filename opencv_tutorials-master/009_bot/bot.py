@@ -1,5 +1,6 @@
 import cv2 as cv
 import pyautogui
+import pydirectinput
 from time import sleep, time
 from threading import Thread, Lock
 from math import sqrt
@@ -13,8 +14,8 @@ class BotState:
     BACKTRACKING = 4
 
 
-class AlbionBot:
-    
+class MTGABot:
+
     # constants
     INITIALIZING_SECONDS = 6
     MINING_SECONDS = 14
@@ -32,7 +33,7 @@ class AlbionBot:
     screenshot = None
     timestamp = None
     movement_screenshot = None
-    window_offset = (0,0)
+    window_offset = (0, 0)
     window_w = 0
     window_h = 0
     limestone_tooltip = None
@@ -42,16 +43,18 @@ class AlbionBot:
         # create a thread lock object
         self.lock = Lock()
 
+        pydirectinput.FAILSAFE = False
         # for translating window positions into screen positions, it's easier to just
-        # get the offsets and window size from WindowCapture rather than passing in 
+        # get the offsets and window size from WindowCapture rather than passing in
         # the whole object
         self.window_offset = window_offset
         self.window_w = window_size[0]
         self.window_h = window_size[1]
 
         # pre-load the needle image used to confirm our object detection
-        self.limestone_tooltip = cv.imread('limestone_tooltip.jpg', cv.IMREAD_UNCHANGED)
-
+        #self.limestone_tooltip = cv.imread('limestone_tooltip.jpg', cv.IMREAD_UNCHANGED)
+        self.play_button = cv.imread(
+            'img\\play_button.png', cv.IMREAD_COLOR)
         # start bot in the initializing mode to allow us time to get setup.
         # mark the time at which this started so we know when to complete it
         self.state = BotState.INITIALIZING
@@ -69,8 +72,8 @@ class AlbionBot:
         targets = self.targets_ordered_by_distance(self.targets)
 
         target_i = 0
-        found_limestone = False
-        while not found_limestone and target_i < len(targets):
+        found_playbutton = False
+        while not found_playbutton and target_i < len(targets):
             # if we stopped our script, exit this loop
             if self.stopped:
                 break
@@ -83,15 +86,18 @@ class AlbionBot:
             print('Moving mouse to x:{} y:{}'.format(screen_x, screen_y))
 
             # move the mouse
-            pyautogui.moveTo(x=screen_x, y=screen_y)
+            # pyautogui.moveTo(x=screen_x, y=screen_y)
+            pydirectinput.moveTo(x=screen_x, y=screen_y)
             # short pause to let the mouse movement complete and allow
             # time for the tooltip to appear
             sleep(1.250)
             # confirm limestone tooltip
             if self.confirm_tooltip(target_pos):
-                print('Click on confirmed target at x:{} y:{}'.format(screen_x, screen_y))
+                print('Click on confirmed target at x:{} y:{}'.format(
+                    screen_x, screen_y))
                 found_limestone = True
-                pyautogui.click()
+                # pyautogui.click()
+                pydirectinput.click()
                 # save this position to the click history
                 self.click_history.append(target_pos)
             target_i += 1
@@ -105,8 +111,9 @@ class AlbionBot:
             return False
 
         # compare the old screenshot to the new screenshot
-        result = cv.matchTemplate(self.screenshot, self.movement_screenshot, cv.TM_CCOEFF_NORMED)
-        # we only care about the value when the two screenshots are laid perfectly over one 
+        result = cv.matchTemplate(
+            self.screenshot, self.movement_screenshot, cv.TM_CCOEFF_NORMED)
+        # we only care about the value when the two screenshots are laid perfectly over one
         # another, so the needle position is (0, 0). since both images are the same size, this
         # should be the only result that exists anyway
         similarity = result[0][0]
@@ -128,6 +135,7 @@ class AlbionBot:
         # searched "python order points by distance from point"
         # simply uses the pythagorean theorem
         # https://stackoverflow.com/a/30636138/4655368
+
         def pythagorean_distance(pos):
             return sqrt((pos[0] - my_pos[0])**2 + (pos[1] - my_pos[1])**2)
         targets.sort(key=pythagorean_distance)
@@ -137,15 +145,17 @@ class AlbionBot:
         # for t in targets:
         #    print(pythagorean_distance(t))
 
-        # ignore targets at are too close to our character (within 130 pixels) to avoid 
+        # ignore targets at are too close to our character (within 130 pixels) to avoid
         # re-clicking a deposit we just mined
-        targets = [t for t in targets if pythagorean_distance(t) > self.IGNORE_RADIUS]
+        targets = [t for t in targets if pythagorean_distance(
+            t) > self.IGNORE_RADIUS]
 
         return targets
 
     def confirm_tooltip(self, target_position):
         # check the current screenshot for the limestone tooltip using match template
-        result = cv.matchTemplate(self.screenshot, self.limestone_tooltip, cv.TM_CCOEFF_NORMED)
+        result = cv.matchTemplate(
+            self.screenshot, self.play_button, cv.TM_CCOEFF_NORMED)
         # get the best match postition
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
         # if we can closely match the tooltip image, consider the object found
@@ -174,12 +184,15 @@ class AlbionBot:
         mirrored_click_x = my_pos[0] - (last_click[0] - my_pos[0])
         mirrored_click_y = my_pos[1] - (last_click[1] - my_pos[1])
         # convert this screenshot position to a screen position
-        screen_x, screen_y = self.get_screen_position((mirrored_click_x, mirrored_click_y))
+        screen_x, screen_y = self.get_screen_position(
+            (mirrored_click_x, mirrored_click_y))
         print('Backtracking to x:{} y:{}'.format(screen_x, screen_y))
-        pyautogui.moveTo(x=screen_x, y=screen_y)
+        # pyautogui.moveTo(x=screen_x, y=screen_y)
+        pydirectinput.moveTo(x=screen_x, y=screen_y)
         # short pause to let the mouse movement complete
         sleep(0.500)
-        pyautogui.click()
+        # pyautogui.click()
+        pydirectinput.click()
 
     # translate a pixel position on a screenshot image to a pixel position on the screen.
     # pos = (x, y)
@@ -260,7 +273,7 @@ class AlbionBot:
                     elif self.state == BotState.BACKTRACKING:
                         self.state = BotState.SEARCHING
                     self.lock.release()
-                
+
             elif self.state == BotState.MINING:
                 # see if we're done mining. just wait some amount of time
                 if time() > self.timestamp + self.MINING_SECONDS:
